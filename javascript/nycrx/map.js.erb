@@ -1,0 +1,120 @@
+var zoom = 10;
+var map = new Object();
+var locations = [];
+
+$(document).ready(function() {
+  loadList('location_list');
+  loadMap('map_canvas');
+  loadLocations();
+});
+
+$(window).unload(function() {
+  GUnload();
+});
+
+function loadMap(map_canvas) {
+  map = new GMap2(document.getElementById(map_canvas));
+  map.setUIToDefault();
+  setCenter();
+  $('#map_loading').fadeOut(2000);
+}
+
+function loadLocations() {
+  <% for location in @locations -%>
+    point = new GLatLng(<%= location.lat %>, <%= location.lng %>);
+    marker = createMarker(point, locationIcon("<%= location.icon_uri %>"));
+    info_content = "<%= escape_javascript location.info_window_content %>";
+    addInfoWindow(marker, info_content);
+    locations.push({latlng:point, marker:marker, info_content:info_content, id:<%= location.id %>});
+    map.addOverlay(marker);
+  <% end -%>
+}
+
+function loadList(list_id) {
+  $('#'+list_id).load('/locations');
+}
+
+function setCenter() {
+  var geocoder = new GClientGeocoder();
+  var default_coords = new GLatLng(40.74, -73.95);
+  if(params['q']) {
+    geocoder.getLatLng(params['q'], function(point) {
+      if(!point) {
+        alert('Could not find ' + params['q']);
+        map.setCenter(default_coords, zoom);
+      } else {
+        map.setCenter(point, 12);
+      }
+    });
+  } else {    
+    map.setCenter(default_coords, zoom);
+  }
+}
+
+function createMarker(point, location_icon) {
+  var marker_opts = { icon:location_icon }
+  var marker = new GMarker(point, marker_opts);
+  return marker;
+}
+
+function locationIcon(icon_uri) {
+  var baseIcon = new GIcon(G_DEFAULT_ICON);
+  baseIcon.image = icon_uri;
+  baseIcon.iconSize = new GSize(30, 30);
+  baseIcon.shadowSize = new GSize(0, 0);
+  return baseIcon;
+}
+
+function addInfoWindow(marker, content) {
+  GEvent.addListener(marker, "click", function() {
+    marker.openInfoWindowHtml(content);
+  });
+}
+
+function zoomTo(lat, lng) {
+  point = new GLatLng(lat, lng);
+  map.setCenter(point, 15);
+  openNearestInfoWindow(point);
+  return false;
+}
+
+function openNearestInfoWindow(point) {
+  // First, calculate distance from given point
+  jQuery.each(locations, function() {
+    this.distance = this.latlng.distanceFrom(point);
+  });
+  // Sort by distance from point
+  locations.sort(function(a, b) {return (a.distance - b.distance)});
+  // Finally, open an info window for the nearest location
+  locations[0].marker.openInfoWindowHtml(locations[0].info_content);
+}
+
+function zoomToLocation(location_id) {
+  lokation = findLocationById(location_id);
+  if(lokation) {
+    map.setCenter(lokation.latlng, 15);
+    lokation.marker.openInfoWindowHtml(lokation.info_content);
+  }
+  return false;
+}
+
+function findLocationById(location_id) {
+  jQuery.each(locations, function() {
+    if(this.id == location_id) {
+      lokation = this;
+    }
+  });
+  return lokation;
+}
+
+function getParams() { // Returns hash of of params from query string
+  var q_string = document.location.search.substring(1);
+  var query = q_string.split('&');
+  var params = {};
+  for(i = 0; i < query.length; i++) {
+    param = query[i].split('=');
+    params[param[0]] = unescape(param[1]).split('+').join(' ');
+  }
+  return params;
+}
+var params = getParams(); // Allows query string params to be accessed as param[key]

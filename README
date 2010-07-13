@@ -1,0 +1,39 @@
+= Ben Shymkiw
+
+This repository contains code samples from a few recent projects.
+
+== Ruby
+
+=== Green Screen
+
+<tt>paperclip_processor.rb</tt>: Shows how I went about removing the background and applying the proper background/overlay images. 
+
+<tt>participant_model.rb</tt>: Contains most of the logic for event participants. The participant's "image profile" will be inherited from the event if none is specified. (The event, in turn, will use the default image profile, if one isn't specified.)
+
+An example of the end result can be found here: http://rbcwestjetmc.athletesvideo.com/oIwFOwLh
+
+=== NYCRx
+
+<tt>location_model.rb</tt>: Geocoding via the Google Maps API.
+
+=== Spree Canada Post Calculator
+
+<tt>canada_post_base.rb</tt>: Contains most of the logic for connecting to Canada Post's (ancient) API.
+
+<tt>canada_post_xpresspost.rb</tt>: Extends the above file, to return the cost for a specific product.
+
+The store this was created for is at http://socialcoffeecompany.com
+
+== Javascript
+
+=== My Blog
+
+<tt>application.js</tt>: Some pretty simple jQuery effects, as well as some additional tracking for Google Analytics.
+
+The site can be viewed at http://iamsolarpowered.heroku.com
+
+=== NYCRx
+
+<tt>map.js.erb</tt>: Shows off some work with the Google Maps API.
+
+The result can be viewed here: http://nycrx.org/en/patients/find-a-center
